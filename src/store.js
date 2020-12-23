@@ -1,5 +1,5 @@
-import { createStore } from "vuex";
-import { nanoid } from 'nanoid';
+import { createStore } from "vuex"
+import { nanoid } from 'nanoid'
 
 let timerInterval;
 
@@ -15,11 +15,17 @@ export const store = createStore({
         name,
         id: nanoid(),
         running: false,
-        times: []
+        times: new Map()
       })
     },
     removeTimer (state, id) {
       state.timers = state.timers.filter(timer => id !== timer.id)
+    },
+    incrementTimer (state, payload) {
+      payload.timer.times.set(payload.timeSlice.id, {
+        ...payload.timeSlice,
+        time: payload.timeSlice.time += 1
+      })
     },
     startTimer (state, id) {
       let currentTimer;
@@ -30,11 +36,16 @@ export const store = createStore({
       
       const currentTimeSlice = {
         date: new Date(),
-        time: 0
+        time: 0,
+        id: nanoid()
       }
-      currentTimer.times.push(currentTimeSlice)
+      currentTimer.times.set(currentTimeSlice.id, currentTimeSlice)
+      if (timerInterval) clearInterval(timerInterval)
       timerInterval = setInterval(() => {
-        currentTimeSlice.time += 1
+        this.commit('incrementTimer', {
+          timer: currentTimer,
+          timeSlice: currentTimeSlice
+        })
       }, 1000);
     },
     stopTimer (state, id) {

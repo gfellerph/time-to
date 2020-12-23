@@ -1,10 +1,17 @@
 <template>
-  <h2>{{timer.name}} - {{getTimeString}}</h2>
-  <button @click="removeTimer">x</button>
-  <button @click="toggleTimer">
+  <a
+    tabindex="0"
+    ref="timerItemRef"
+    class="timer"
+    @keydown.space="toggleTimer"
+    @keydown.enter="toggleTimer"
+    @keydown.delete="removeTimer"
+    @click="toggleTimer"
+  >
+    <h2>{{timer.name}} - {{getTimeString}}</h2>
     <span v-show="!timer.running">></span>
     <span v-show="timer.running">||</span>
-  </button>
+  </a>
 </template>
 
 <script>
@@ -18,12 +25,20 @@
       },
       toggleTimer() {
         this.$store.commit(this.timer.running ? 'stopTimer' : 'startTimer', this.timer.id)
+      },
+      focus() {
+        if (this.$refs.timerItemRef === document.activeElement) {
+          this.toggleTimer()
+        } else {
+          this.$refs.timerItemRef.focus()
+        }
       }
     },
     computed: {
       getTimeString() {
-        const seconds = this.timer.times.reduce((acc, timeSlice) => acc + timeSlice.time, 0);
-        return seconds || new Date(seconds * 1000).toISOString().substring(11, 8)
+        let seconds = 0
+        this.timer.times.forEach(timeSlice => seconds += timeSlice.time);
+        return seconds ?? new Date(seconds * 1000).toISOString().substring(11, 8)
       }
     }
   }

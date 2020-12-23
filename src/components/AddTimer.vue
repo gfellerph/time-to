@@ -1,8 +1,5 @@
 <template>
-  <div class="add-timer">
-    <input type="text" v-model="timerName" @keydown.enter="addTimer">
-    <button @click="addTimer">Add Timer</button>
-  </div>
+  <input type="text" v-model="timerName" @keydown.stop.enter="addTimer">
 </template>
 
 <script lang="ts">
