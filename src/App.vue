@@ -1,15 +1,18 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
-  <HelloWorld msg="Hello Vue 3.0 + Vite" />
+  <h1>time to</h1>
+  <AddTimer />
+  <TimerList />
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import AddTimer from './components/AddTimer.vue'
+import TimerList from './components/TimerList.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    AddTimer,
+    TimerList
   }
 }
 </script>
