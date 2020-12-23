@@ -1,32 +1,51 @@
 <template>
-  <ol>
-    <li v-for="timer in timers" :key="timer.id">
-      <Timer :timer="timer" :ref="trackRef" />
+  <ol class="timer-list">
+    <li v-for="(timer, index) in timers" :key="timer.id">
+      <Timer :timer="timer" :ref="trackRef" :index="index" />
     </li>
   </ol>
 </template>
 
 <script>
 import Timer from './TimerItem.vue';
-let handler;
+
+let handlers = new Map()
+
 export default {
   components: {
     Timer,
   },
   data() {
     return {
-      timerRefs: []
+      timerRefs: new Map(),
+      lastFocus: null
     }
   },
   mounted() {
-    handler = this.mitt.on('num-key', num => {
-      console.log(this.timerRefs, num)
-      const i = Math.min(num, this.timerRefs.length - 1)
-      this.timerRefs[i].focus()
+    const num = this.mitt.on('num-key', num => {
+      const i = Math.min(num, this.timerRefs.size) - 1
+      this.timerRefs.get(i).focus()
+      this.lastFocus = i
     })
+    const del = this.mitt.on('delete', () => {
+      setTimeout(() => {
+        if (this.timerRefs.size === 0) {
+          this.mitt.emit('esc')
+          return
+        }
+        const nextFocus = this.lastFocus === 0 ? 0 : this.lastFocus - 1
+        this.timerRefs.get(nextFocus).focus()
+        this.lastFocus = nextFocus
+      }, 1)
+    })
+    handlers.set('num-key', num)
+    handlers.set('delete', del)
+  },
+  beforeUpdate() {
+    this.timerRefs.clear()
   },
   beforeUnmount() {
-    this.mitt.off('num-key', handler)
+    handlers.forEach((handler, event) => this.mitt.off(event, handler))
   },
   computed: {
     timers() {
@@ -35,12 +54,23 @@ export default {
   },
   methods: {
     trackRef(ref) {
-      this.timerRefs.push(ref)
+      if (ref) this.timerRefs.set(ref.index, ref)
     }
   }
 }
 </script>
 
-<style>
-
+<style scoped>
+  .timer-list {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+    height: 100%;
+    justify-self: stretch;
+    border-bottom: 4px solid black;
+  }
+  
+  .timer-list li {
+    height: calc(100% / 9);
+  }
 </style>
